@@ -160,6 +160,29 @@ class UltimateBoard:
             return True
         return False
 
+    # Return a list of valid moves from the current board position
+    # A valid move is returned as a tuple
+    # (valid_board_x, valid_board_y, valid_inner_x, valid_inner_y)
+    def get_valid_moves(self):
+        moves = []
+        for by in range(3):
+            for bx in range(3):
+                for iy in range(3):
+                    for ix in range(3):
+                        if self.is_valid(bx, by, ix, iy):
+                            moves.append(TwoPoint(bx, by, ix, iy))
+        return moves
+
+    # Takes a list of lists, and turns it into one list
+    # l is a list of lists.
+    @staticmethod
+    def flatten(l):
+        flat = []
+        for sublist in l:
+            for item in sublist:
+                flat.append(item)
+        return flat
+
     # Return true if all the boxes are filled and false otherwise
     # False otherwise
     def check_filled(self):
@@ -204,7 +227,7 @@ class UltimateBoard:
 # win = n.check_win()
 # print(win)
 u1 = UltimateBoard()
-for i in range(1000):
+for i in range(100):
     if u1.lastPlayedX != -1:
         bx = u1.lastPlayedX
         by = u1.lastPlayedY
@@ -216,6 +239,7 @@ for i in range(1000):
         ry = random.randint(0, 8)
         # print(rx, ry)
         u1.do_move2(rx, ry)
+
 
 # for y in range(3):
 #     for x in range(3):
@@ -230,3 +254,4 @@ for i in range(1000):
 
 print(u1)
 print(u1.check_win())
+# print(u1.get_valid_moves())
