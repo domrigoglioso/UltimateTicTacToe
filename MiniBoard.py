@@ -42,16 +42,16 @@ class MiniBoard:
     # Displays X, O, or * depending on what player occupies box (x, y)
     # * denotes empty
     def box_to_letter(self, x, y):
-        if self.state[x][y] == -1:
+        if self.state[y][x] == -1:
             return "O"
-        elif self.state[x][y] == 1:
+        elif self.state[y][x] == 1:
             return "X"
         return "*"
 
     # Makes a move in the box (x,y) regardless of tic tac toe rules
     # x and y must each be between 0 and 2
     def autoturn_do_move_dirty(self, x, y):
-        self.state[x][y] = self.currentPlayer
+        self.state[y][x] = self.currentPlayer
         self.proceed_turn(x, y)
         self.check_win()
 
@@ -61,14 +61,14 @@ class MiniBoard:
     # Precondition: x and y must be between 0 and 2
     def autoturn_do_move(self, x, y):
         if self.is_valid(x,y):
-            self.state[x][y] = self.currentPlayer
+            self.state[y][x] = self.currentPlayer
             self.proceed_turn(x, y)
             self.check_win()
 
     # Makes a move in the box (x,y) regardless of tic tac toe rules
     # x and y must each be between 0 and 2. player is -1 or 1
     def do_move_dirty(self, x, y, player):
-        self.state[x][y] = player
+        self.state[y][x] = player
         self.proceed_turn(x, y)
         self.currentPlayer = player * -1
         self.turnsElapsed += 1
@@ -81,7 +81,7 @@ class MiniBoard:
     # Precondition: x and y must be between 0 and 2. player is -1 or 1
     def do_move(self, x, y, player):
         if self.is_valid(x, y):
-            self.state[x][y] = player
+            self.state[y][x] = player
             self.currentPlayer = player * -1
             self.turnsElapsed += 1
             self.lastPlayed = (x, y)
@@ -90,7 +90,7 @@ class MiniBoard:
     # Returns true if a move in box (x, y) is valid given the game's current
     # state
     def is_valid(self, x, y):
-        return self.state[x][y] == 0 and self.finished == 0
+        return self.state[y][x] == 0 and self.finished == 0
 
     # Increments the number of turns, changes what player has the current
     # turn, and updates the last played box
@@ -115,7 +115,7 @@ class MiniBoard:
         # then X (1) or O (-1), respectively, has won
         # Col 0
         for x in range(3):
-            if abs(self.state[x][0] + self.state[x][1] + self.state[x][2]) == 3:
+            if abs(self.state[0][x] + self.state[1][x] + self.state[2][x]) == 3:
                 return x
         return -1
 
@@ -126,7 +126,7 @@ class MiniBoard:
         # then X (1) or O (-1), respectively, has won
         # Col 0
         for y in range(3):
-            if abs(self.state[0][y] + self.state[1][y] + self.state[2][y]) == 3:
+            if abs(self.state[y][0] + self.state[y][1] + self.state[y][2]) == 3:
                 return y
         return -1
 
@@ -144,7 +144,8 @@ class MiniBoard:
     def check_filled(self):
         for y in range(3):
             for x in range(3):
-                if self.state[x][y] == 0: return False
+                if self.state[y][x] == 0:
+                    return False
         return True
 
     # Return -1, or 1 if O or X has won the tic-tac-toe game, respectively.

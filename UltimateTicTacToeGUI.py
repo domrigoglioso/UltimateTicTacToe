@@ -71,14 +71,14 @@ class MiniBoardFrame:
     def __init__(self, root, mb, bx, by):
         self.mb_frame = Frame(root)
         self.text = [[StringVar() for x in range(3)] for y in range(3)]
-        self.button = [[Button(self.mb_frame, textvariable=self.text[x][y],
+        self.button = [[Button(self.mb_frame, textvariable=self.text[y][x],
                                height=5, width=10, bg="PaleTurquoise1")
                         for x in range(3)] for y in range(3)]
         for y in range(3):
             for x in range(3):
                 self.text[x][y].set(mb.box_to_letter(x, y))
                 self.button[x][y].grid(row=y, column=x, sticky=W)
-        # self.mb_frame.grid(row=bx, column=by, sticky=W)
+        self.mb_frame.grid(row=bx, column=by, sticky=W)
         self.paddingX = Label(root, height=2, width=4)
         self.paddingX.grid(row=by*2, column=bx*2+1, sticky=W)
         self.paddingY = Label(root, height=2, width=4)
@@ -114,7 +114,28 @@ root = Tk()
 # mb.set_valid()
 # f = mb.get_frame()
 u1 = UltimateBoard()
+for i in range(100):
+    if u1.lastPlayedX != -1:
+        bx = u1.lastPlayedX
+        by = u1.lastPlayedY
+        rx = random.randint(0, 2)
+        ry = random.randint(0, 2)
+        u1.do_move4(bx, by, rx, ry)
+    else:
+        rx = random.randint(0, 8)
+        ry = random.randint(0, 8)
+        # print(rx, ry)
+        u1.do_move2(rx, ry)
 ub = UltimateBoardFrame(root, u1)
+print(u1)
+print(u1.boards[2][0])
+# BUG WITH THE ULTIMATE BOARD PRINT
+# mb = MiniBoardFrame(root, u1.boards[2][0], 0, 0)
+# m2 = MiniBoard()
+# m2.do_move(2, 1, 1)
+# print(m2)
+# print(m2.state[1][2])
+# mb = MiniBoardFrame(root, m2, 0, 0)
 root.mainloop()
 
 
