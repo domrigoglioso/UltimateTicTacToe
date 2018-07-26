@@ -192,6 +192,13 @@ class UltimateBoard:
                     return False
         return True
 
+    # Does a random valid move
+    def random_move(self):
+        moves = self.get_valid_moves()
+        r = random.randint(0, len(moves)-1)
+        move = moves[r]
+        self.do_move4(move.boardX, move.boardY, move.innerX, move.innerY)
+
     def __str__(self):
         # line = "\n|---|---|---|\t|---|---|---|\t|---|---|---|\n"
         st = ""
