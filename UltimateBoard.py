@@ -116,9 +116,9 @@ class UltimateBoard:
         rows = self.check_rows()
         dia = self.check_diagonals()
         if cols != -1:
-            return self.boardStates[cols][0]
+            return self.boardStates[0][cols]
         elif rows != -1:
-            return self.boardStates[0][rows]
+            return self.boardStates[rows][0]
         elif dia:
             return self.boardStates[1][1]
         elif self.check_filled():

@@ -156,9 +156,9 @@ class MiniBoard:
         rows = self.check_rows()
         dia = self.check_diagonals()
         if cols != -1:
-            return self.state[cols][0]
+            return self.state[0][cols]
         elif rows != -1:
-            return self.state[0][rows]
+            return self.state[rows][cols]
         elif dia:
             return self.state[1][1]
         elif self.check_filled():
