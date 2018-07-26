@@ -67,6 +67,14 @@ from tkinter import ttk
 # root.mainloop()
 
 
+# Used to turn -1 to O, and X to 1
+def int_to_letter(player):
+    if player == 1:
+        return "X"
+    else:
+        return "O"
+
+
 class MiniBoardFrame:
     def __init__(self, root, mb, bx, by):
         self.mb_frame = Frame(root)
@@ -78,32 +86,105 @@ class MiniBoardFrame:
             for x in range(3):
                 self.text[x][y].set(mb.box_to_letter(x, y))
                 self.button[x][y].grid(row=y, column=x, sticky=W)
-        self.mb_frame.grid(row=bx, column=by, sticky=W)
-        self.paddingX = Label(root, height=2, width=4)
-        self.paddingX.grid(row=by*2, column=bx*2+1, sticky=W)
-        self.paddingY = Label(root, height=2, width=4)
-        self.paddingY.grid(row=by*2+1, column=bx*2, sticky=W)
-        self.mb_frame.grid(row=by*2, column=bx*2, sticky=W)
+        self.mb_frame.grid(row=bx, column=by, sticky=W, padx=20, pady=20)
+        # self.mb_frame.grid(row=bx, column=by, sticky=W)
+        # self.paddingX = Label(root, height=2, width=4)
+        # self.paddingX.grid(row=by*2, column=bx*2+1, sticky=W)
+        # self.paddingY = Label(root, height=2, width=4)
+        # self.paddingY.grid(row=by*2+1, column=bx*2, sticky=W)
+        # self.mb_frame.grid(row=by*2, column=bx*2, sticky=W)
 
     def set_valid(self):
         for y in range(3):
             for x in range(3):
                 self.button[x][y].configure(bg="PaleGreen1")
 
+    def set_invalid(self):
+        for y in range(3):
+            for x in range(3):
+                self.button[x][y].configure(bg="PaleTurquoise1")
+
     def get_frame(self):
         return self.mb_frame
 
 
-class UltimateBoardFrame(Frame):
+
+
+
+class UltimateBoardFrame():
     def __init__(self, root, ub):
         self.ub_frame = Frame(root)
+        # self.paddingX = Label(root, height=51, width=4)
+        # self.paddingY = Label(root, height=2, width=102)
+        # self.paddingX.pack(side=LEFT)
+        # self.paddingY.pack(side=TOP)
+        self.ub = ub
         self.mb_frames = [[MiniBoardFrame(self.ub_frame, ub.boards[x][y],
                                           x, y) for x in
                            range(3)] for y in range(3)]
-        self.ub_frame.pack()
+        self.ub_frame.grid(row=0, column=0, sticky=W)
+
+        self.optionsFrame = Frame(self.ub_frame)
+        self.optionsFrame.grid(row=0, column=4, sticky=W)
+        self.opp1 = StringVar()
+        self.opp1.set("Opponent 1 Type")
+        self.opponent1Option = OptionMenu(self.optionsFrame, self.opp1, "Human",
+                                          "Random AI", "Mini-Max AI",
+                                          "Monte Carlo AI", "Multi-Armed "
+                                                            "Bandit AI")
+        self.opponent1Option.config(width=19)
+        self.opponent1Option.grid(row=0, column=0, sticky=W)
+        self.opp2 = StringVar()
+        self.opp2.set("Opponent 2 Type")
+        self.opponent2Option = OptionMenu(self.optionsFrame, self.opp2, "Human",
+                                          "Random AI", "Mini-Max AI",
+                                          "Monte Carlo AI", "Multi-Armed "
+                                                            "Bandit AI")
+        self.opponent2Option.config(width=19)
+        self.opponent2Option.grid(row=1, column=0, sticky=W)
+
+        self.startButton = Button(self.optionsFrame, text="Start", width=21)
+        self.startButton.grid(row=2, column=0, sticky=W)
+
+        self.currentPlayer = StringVar()
+        self.currentPlayer.set("Current Player: " +
+                               int_to_letter(self.ub.currentPlayer))
+        self.currentPlayerLabel = Label(self.optionsFrame,
+                                        textvar=self.currentPlayer)
+        self.currentPlayerLabel.grid(row=3, column=0, sticky=W)
+
+        self.turnsElapsed = StringVar()
+        self.turnsElapsed.set("Turns Elapsed: " + str(self.ub.turnsElapsed))
+        self.turnsElapsedLabel = Label(self.optionsFrame,
+                                       textvar=self.turnsElapsed)
+        self.turnsElapsedLabel.grid(row=4, column=0, sticky=W)
+
+        self.bind_buttons()
 
     def get_frame(self):
         return self.ub_frame
+
+    def bind_buttons(self):
+        for by in range(3):
+            for bx in range(3):
+                for iy in range(3):
+                    for ix in range(3):
+                        # equalButton.bind("<Button-1>", get_sum)
+                        self.mb_frames[by][bx].button[iy][ix].bind(
+                            "<Button-1>", lambda event, bx=bx, by=by, ix=ix,
+                                                 iy=iy: self.do_move(bx, by,
+                                                                     ix, iy))
+
+    def do_move(self, bx, by, ix, iy):
+        print(bx, by, ix, iy)
+        self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_invalid()
+        self.ub.do_move4(bx, by, ix, iy)
+        self.update_board(bx, by, ix, iy)
+        self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_valid()
+
+    def update_board(self, bx, by, ix, iy):
+        self.mb_frames[by][bx].text[iy][ix].set(self.ub.boards[by][bx]
+                                                .box_to_letter(ix, iy))
 
 
 root = Tk()
@@ -114,21 +195,24 @@ root = Tk()
 # mb.set_valid()
 # f = mb.get_frame()
 u1 = UltimateBoard()
-for i in range(100):
-    if u1.lastPlayedX != -1:
-        bx = u1.lastPlayedX
-        by = u1.lastPlayedY
-        rx = random.randint(0, 2)
-        ry = random.randint(0, 2)
-        u1.do_move4(bx, by, rx, ry)
-    else:
-        rx = random.randint(0, 8)
-        ry = random.randint(0, 8)
-        # print(rx, ry)
-        u1.do_move2(rx, ry)
+# for i in range(100):
+#     if u1.lastPlayedX != -1:
+#         bx = u1.lastPlayedX
+#         by = u1.lastPlayedY
+#         rx = random.randint(0, 2)
+#         ry = random.randint(0, 2)
+#         u1.do_move4(bx, by, rx, ry)
+#     else:
+#         rx = random.randint(0, 8)
+#         ry = random.randint(0, 8)
+#         # print(rx, ry)
+#         u1.do_move2(rx, ry)
+# for i in range(40):
+#     u1.random_move()
 ub = UltimateBoardFrame(root, u1)
+
 print(u1)
-print(u1.boards[2][0])
+print(u1.finished)
 # BUG WITH THE ULTIMATE BOARD PRINT
 # mb = MiniBoardFrame(root, u1.boards[2][0], 0, 0)
 # m2 = MiniBoard()
