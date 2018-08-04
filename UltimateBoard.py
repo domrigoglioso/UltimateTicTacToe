@@ -19,6 +19,7 @@ class UltimateBoard:
         self.lastPlayedY = -1
         self.currentPlayer = 1
         self.finished = 0
+        self.lastMove = {}
 
     # Precondition: x and y are each from 0 to 8
     # Postcondition: Returns a named tuple of 4 numbers, each from 0 to 2.
@@ -61,6 +62,7 @@ class UltimateBoard:
             self.lastPlayedX = -1
             self.lastPlayedY = -1
         self.currentPlayer *= -1
+        self.lastMove = (boardX, boardY, innerX, innerY)
         self.finished = self.check_win()
 
     # Precondition: x and y are between 0 and 8
@@ -205,7 +207,7 @@ class UltimateBoard:
         for y in range(3):
             for inner_y in range(3):
                 for x in range(3):
-                    st = st + self.boards[x][y].print_row(inner_y) + "\t"
+                    st = st + self.boards[y][x].print_row(inner_y) + "\t"
                 st = st + "\n"
                 # st = st + line
             st = st + "\n"

@@ -77,32 +77,47 @@ def int_to_letter(player):
 
 class MiniBoardFrame:
     def __init__(self, root, mb, bx, by):
+        self.mb = mb
         self.mb_frame = Frame(root)
         self.text = [[StringVar() for x in range(3)] for y in range(3)]
         self.button = [[Button(self.mb_frame, textvariable=self.text[y][x],
-                               height=5, width=10, bg="PaleTurquoise1")
+                               height=5, width=10, bg="PaleGreen1")
                         for x in range(3)] for y in range(3)]
         for y in range(3):
             for x in range(3):
-                self.text[x][y].set(mb.box_to_letter(x, y))
-                self.button[x][y].grid(row=y, column=x, sticky=W)
-        self.mb_frame.grid(row=bx, column=by, sticky=W, padx=20, pady=20)
-        # self.mb_frame.grid(row=bx, column=by, sticky=W)
-        # self.paddingX = Label(root, height=2, width=4)
-        # self.paddingX.grid(row=by*2, column=bx*2+1, sticky=W)
-        # self.paddingY = Label(root, height=2, width=4)
-        # self.paddingY.grid(row=by*2+1, column=bx*2, sticky=W)
-        # self.mb_frame.grid(row=by*2, column=bx*2, sticky=W)
+                self.text[y][x].set(mb.box_to_letter(x, y))
+                self.button[y][x].grid(row=y, column=x, sticky=W)
+        self.mb_frame.grid(row=by, column=bx, sticky=W, padx=20, pady=20)
 
     def set_valid(self):
         for y in range(3):
             for x in range(3):
-                self.button[x][y].configure(bg="PaleGreen1")
+                self.button[y][x].configure(bg="PaleGreen1")
+
+    def set_won(self):
+        for y in range(3):
+            for x in range(3):
+                if self.mb.finished == 1:
+                    self.button[y][x].configure(bg="pale goldenrod")
+                elif self.mb.finished == -1:
+                    self.button[y][x].configure(bg="PaleVioletRed1")
+                elif self.mb.finished == 2:
+                    self.button[y][x].configure(bg="PaleTurquoise4")
+                else:
+                    self.button[y][x].configure(bg="PaleTurquoise1")
 
     def set_invalid(self):
         for y in range(3):
             for x in range(3):
-                self.button[x][y].configure(bg="PaleTurquoise1")
+                if self.mb.finished == 1:
+                    self.button[y][x].configure(bg="pale goldenrod")
+                elif self.mb.finished == -1:
+                    self.button[y][x].configure(bg="PaleVioletRed1")
+                elif self.mb.finished == 2:
+                    self.button[y][x].configure(bg="PaleTurquoise4")
+                else:
+                    self.button[y][x].configure(bg="PaleTurquoise1")
+
 
     def get_frame(self):
         return self.mb_frame
@@ -119,7 +134,7 @@ class UltimateBoardFrame():
         # self.paddingX.pack(side=LEFT)
         # self.paddingY.pack(side=TOP)
         self.ub = ub
-        self.mb_frames = [[MiniBoardFrame(self.ub_frame, ub.boards[x][y],
+        self.mb_frames = [[MiniBoardFrame(self.ub_frame, ub.boards[y][x],
                                           x, y) for x in
                            range(3)] for y in range(3)]
         self.ub_frame.grid(row=0, column=0, sticky=W)
@@ -177,14 +192,46 @@ class UltimateBoardFrame():
 
     def do_move(self, bx, by, ix, iy):
         print(bx, by, ix, iy)
-        self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_invalid()
+        # Add case for when all were previously valid, and when all of them
+        # become valid
+
+        if self.ub.lastPlayedX == -1:
+            for y in range(3):
+                for x in range(3):
+                    self.mb_frames[y][x].set_invalid()
+        else:
+            self.mb_frames[self.ub.lastPlayedY][
+                 self.ub.lastPlayedX].set_invalid()
+        # self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_invalid()
         self.ub.do_move4(bx, by, ix, iy)
         self.update_board(bx, by, ix, iy)
-        self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_valid()
+        self.currentPlayer.set(int_to_letter(self.ub.currentPlayer))
+        print(self.ub)
+
+    def move(self, bx, by, ix, iy):
+        self.root.config(cursor="watch")
+        self.do_move(bx, by, ix, iy)
+        self.root.config(cursor="no")
+
 
     def update_board(self, bx, by, ix, iy):
+        # Update letters in boxes
         self.mb_frames[by][bx].text[iy][ix].set(self.ub.boards[by][bx]
                                                 .box_to_letter(ix, iy))
+
+        # Check if box was won
+        if self.ub.boards[by][bx].finished != 0:
+            self.mb_frames[by][bx].set_won()
+
+        # Check which boxes are valid
+        if self.ub.lastPlayedX == -1:
+            for y in range(3):
+                for x in range(3):
+                    if self.ub.boardStates[y][x] == 0:
+                        self.mb_frames[y][x].set_valid()
+        else:
+            self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_valid()
+        # self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_valid()
 
 
 root = Tk()
@@ -209,10 +256,18 @@ u1 = UltimateBoard()
 #         u1.do_move2(rx, ry)
 # for i in range(40):
 #     u1.random_move()
+# u1.do_move4(1, 1, 1, 1)
+# u1.do_move4(1, 1, 2, 0)
+# u1.do_move4(2, 0, 1, 1)
+# u1.do_move4(1, 1, 1, 0)
+# u1.do_move4(1, 0, 1, 1)
+# u1.do_move4(0, 0, 1, 1)
+# u1.do_move4(1, 1, 0, 0)
+# print(u1.lastPlayedX)
 ub = UltimateBoardFrame(root, u1)
 
-print(u1)
-print(u1.finished)
+# print(u1)
+# print(u1.finished)
 # BUG WITH THE ULTIMATE BOARD PRINT
 # mb = MiniBoardFrame(root, u1.boards[2][0], 0, 0)
 # m2 = MiniBoard()

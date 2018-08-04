@@ -60,10 +60,10 @@ class MiniBoard:
     # accordingly. Otherwise nothing changes.
     # Precondition: x and y must be between 0 and 2
     def autoturn_do_move(self, x, y):
-        if self.is_valid(x,y):
+        if self.is_valid(x, y):
             self.state[y][x] = self.currentPlayer
             self.proceed_turn(x, y)
-            self.check_win()
+            self.finished = self.check_win()
 
     # Makes a move in the box (x,y) regardless of tic tac toe rules
     # x and y must each be between 0 and 2. player is -1 or 1
@@ -73,7 +73,7 @@ class MiniBoard:
         self.currentPlayer = player * -1
         self.turnsElapsed += 1
         self.lastPlayed = (x, y)
-        self.check_win()
+        self.finished = self.check_win()
 
     # Attempts to make a move in the box (x, y)
     # If the move abides by tic-tac-toe rules, then the game is updated
@@ -85,7 +85,7 @@ class MiniBoard:
             self.currentPlayer = player * -1
             self.turnsElapsed += 1
             self.lastPlayed = (x, y)
-            self.check_win()
+            self.finished = self.check_win()
 
     # Returns true if a move in box (x, y) is valid given the game's current
     # state
@@ -158,7 +158,7 @@ class MiniBoard:
         if cols != -1:
             return self.state[0][cols]
         elif rows != -1:
-            return self.state[rows][cols]
+            return self.state[rows][0]
         elif dia:
             return self.state[1][1]
         elif self.check_filled():
