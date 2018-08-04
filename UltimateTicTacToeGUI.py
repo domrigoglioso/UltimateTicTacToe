@@ -1,6 +1,7 @@
 from UltimateBoard import *
 from tkinter import *
 from tkinter import ttk
+import Controller
 
 # root = Tk()
 # 1)
@@ -129,16 +130,16 @@ class MiniBoardFrame:
 class UltimateBoardFrame():
     def __init__(self, root, ub):
         self.ub_frame = Frame(root)
-        # self.paddingX = Label(root, height=51, width=4)
-        # self.paddingY = Label(root, height=2, width=102)
-        # self.paddingX.pack(side=LEFT)
-        # self.paddingY.pack(side=TOP)
+
         self.ub = ub
+        # MiniBoards
         self.mb_frames = [[MiniBoardFrame(self.ub_frame, ub.boards[y][x],
                                           x, y) for x in
                            range(3)] for y in range(3)]
         self.ub_frame.grid(row=0, column=0, sticky=W)
-
+        self.bind_buttons()
+        # Side Menu: Opponent type, turns played, current player
+        # Opponent 1
         self.optionsFrame = Frame(self.ub_frame)
         self.optionsFrame.grid(row=0, column=4, sticky=W)
         self.opp1 = StringVar()
@@ -149,6 +150,7 @@ class UltimateBoardFrame():
                                                             "Bandit AI")
         self.opponent1Option.config(width=19)
         self.opponent1Option.grid(row=0, column=0, sticky=W)
+        # Opponent 2
         self.opp2 = StringVar()
         self.opp2.set("Opponent 2 Type")
         self.opponent2Option = OptionMenu(self.optionsFrame, self.opp2, "Human",
@@ -157,24 +159,23 @@ class UltimateBoardFrame():
                                                             "Bandit AI")
         self.opponent2Option.config(width=19)
         self.opponent2Option.grid(row=1, column=0, sticky=W)
-
+        # Start Button
         self.startButton = Button(self.optionsFrame, text="Start", width=21)
         self.startButton.grid(row=2, column=0, sticky=W)
-
+        # Current Player
         self.currentPlayer = StringVar()
         self.currentPlayer.set("Current Player: " +
                                int_to_letter(self.ub.currentPlayer))
         self.currentPlayerLabel = Label(self.optionsFrame,
                                         textvar=self.currentPlayer)
         self.currentPlayerLabel.grid(row=3, column=0, sticky=W)
-
+        # Turns Elapsed
         self.turnsElapsed = StringVar()
         self.turnsElapsed.set("Turns Elapsed: " + str(self.ub.turnsElapsed))
         self.turnsElapsedLabel = Label(self.optionsFrame,
                                        textvar=self.turnsElapsed)
         self.turnsElapsedLabel.grid(row=4, column=0, sticky=W)
 
-        self.bind_buttons()
 
     def get_frame(self):
         return self.ub_frame
@@ -187,34 +188,29 @@ class UltimateBoardFrame():
                         # equalButton.bind("<Button-1>", get_sum)
                         self.mb_frames[by][bx].button[iy][ix].bind(
                             "<Button-1>", lambda event, bx=bx, by=by, ix=ix,
-                                                 iy=iy: self.do_move(bx, by,
+                                                 iy=iy: self.user_move(bx, by,
                                                                      ix, iy))
 
-    def do_move(self, bx, by, ix, iy):
-        print(bx, by, ix, iy)
-        # Add case for when all were previously valid, and when all of them
-        # become valid
+    def user_move(self, bx, by, ix, iy):
+        # self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_invalid()
+        Controller.move(self, self.ub, bx, by, ix, iy)
 
+    def move(self, bx, by, ix, iy):
+        self.root.config(cursor="watch")
+        self.user_move(bx, by, ix, iy)
+        self.root.config(cursor="")
+
+    def set_valid_boards(self):
         if self.ub.lastPlayedX == -1:
             for y in range(3):
                 for x in range(3):
                     self.mb_frames[y][x].set_invalid()
         else:
-            self.mb_frames[self.ub.lastPlayedY][
-                 self.ub.lastPlayedX].set_invalid()
-        # self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_invalid()
-        self.ub.do_move4(bx, by, ix, iy)
-        self.update_board(bx, by, ix, iy)
-        self.currentPlayer.set(int_to_letter(self.ub.currentPlayer))
-        print(self.ub)
-
-    def move(self, bx, by, ix, iy):
-        self.root.config(cursor="watch")
-        self.do_move(bx, by, ix, iy)
-        self.root.config(cursor="no")
-
+            self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX]\
+                .set_invalid()
 
     def update_board(self, bx, by, ix, iy):
+        # self.set_valid_boards()
         # Update letters in boxes
         self.mb_frames[by][bx].text[iy][ix].set(self.ub.boards[by][bx]
                                                 .box_to_letter(ix, iy))
@@ -231,6 +227,10 @@ class UltimateBoardFrame():
                         self.mb_frames[y][x].set_valid()
         else:
             self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_valid()
+
+        self.turnsElapsed.set("Turns Elapsed: " + str(self.ub.turnsElapsed))
+        self.currentPlayer.set("Current Player: " +
+                               int_to_letter(self.ub.currentPlayer))
         # self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_valid()
 
 
