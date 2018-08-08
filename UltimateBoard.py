@@ -112,7 +112,7 @@ class UltimateBoard:
 
     # Return -1, or 1 if O or X has won the tic-tac-toe game, respectively.
     # Return 0 if the game has not been won.
-    # Return 2 if the game is tied.
+    # Return 10 if the game is tied.
     def check_win(self):
         cols = self.check_columns()
         rows = self.check_rows()
@@ -124,7 +124,7 @@ class UltimateBoard:
         elif dia:
             return self.boardStates[1][1]
         elif self.check_filled():
-            return 2
+            return 10
         return 0
 
     # Return the row number of a winning row of the tic-tac-toe game
@@ -196,7 +196,10 @@ class UltimateBoard:
 
     # Does a random valid move
     def random_move(self):
+        if self.finished != 0:
+            return
         moves = self.get_valid_moves()
+        num_moves = len(moves)
         r = random.randint(0, len(moves)-1)
         move = moves[r]
         self.do_move4(move.boardX, move.boardY, move.innerX, move.innerY)

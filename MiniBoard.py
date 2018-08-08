@@ -9,7 +9,7 @@ class MiniBoard:
         self.currentPlayer = 1
         # finished denotes if the game is finished.
         # It is 0 if the game is ongoing, 1 if X has won the game,
-        # -1 if O has won the game, and 2 if a tie.
+        # -1 if O has won the game, and 10 if a tie.
         self.finished = 0
         # turnsElapsed is the number of turns the game has gone on for.
         self.turnsElapsed = 0
@@ -150,7 +150,7 @@ class MiniBoard:
 
     # Return -1, or 1 if O or X has won the tic-tac-toe game, respectively.
     # Return 0 if the game has not been won.
-    # Return 2 if the game is tied.
+    # Return 10 if the game is tied.
     def check_win(self):
         cols = self.check_columns()
         rows = self.check_rows()
@@ -162,7 +162,7 @@ class MiniBoard:
         elif dia:
             return self.state[1][1]
         elif self.check_filled():
-            return 2
+            return 10
         return 0
 
 
