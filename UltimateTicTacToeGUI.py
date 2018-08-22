@@ -119,12 +119,8 @@ class MiniBoardFrame:
                 else:
                     self.button[y][x].configure(bg="PaleTurquoise1")
 
-
     def get_frame(self):
         return self.mb_frame
-
-
-
 
 
 class UltimateBoardFrame():
@@ -137,13 +133,12 @@ class UltimateBoardFrame():
                                           x, y) for x in
                            range(3)] for y in range(3)]
         self.ub_frame.grid(row=0, column=0, sticky=W)
-        self.bind_buttons()
         # Side Menu: Opponent type, turns played, current player
         # Opponent 1
         self.optionsFrame = Frame(self.ub_frame)
         self.optionsFrame.grid(row=0, column=4, sticky=W)
         self.opp1 = StringVar()
-        self.opp1.set("Opponent 1 Type")
+        self.opp1.set("Player 1 Type")
         self.opponent1Option = OptionMenu(self.optionsFrame, self.opp1, "Human",
                                           "Random AI", "Mini-Max AI",
                                           "Monte Carlo AI", "Multi-Armed "
@@ -152,7 +147,7 @@ class UltimateBoardFrame():
         self.opponent1Option.grid(row=0, column=0, sticky=W)
         # Opponent 2
         self.opp2 = StringVar()
-        self.opp2.set("Opponent 2 Type")
+        self.opp2.set("Player 2 Type")
         self.opponent2Option = OptionMenu(self.optionsFrame, self.opp2, "Human",
                                           "Random AI", "Mini-Max AI",
                                           "Monte Carlo AI", "Multi-Armed "
@@ -162,30 +157,43 @@ class UltimateBoardFrame():
         # Start Button
         self.startButton = Button(self.optionsFrame, text="Start", width=21)
         self.startButton.grid(row=2, column=0, sticky=W)
+        self.startButton.bind("<Button-1>", lambda event: self.start_game())
+        # Reset
+        self.startButton = Button(self.optionsFrame, text="Reset", width=21)
+        self.startButton.grid(row=3, column=0, sticky=W)
+        self.startButton.bind("<Button-1>", lambda event: self.reset())
         # Current Player
         self.currentPlayer = StringVar()
         self.currentPlayer.set("Current Player: " +
                                int_to_letter(self.ub.currentPlayer))
         self.currentPlayerLabel = Label(self.optionsFrame,
                                         textvar=self.currentPlayer)
-        self.currentPlayerLabel.grid(row=3, column=0, sticky=W)
+        self.currentPlayerLabel.grid(row=4, column=0, sticky=W)
         # Turns Elapsed
         self.turnsElapsed = StringVar()
         self.turnsElapsed.set("Turns Elapsed: " + str(self.ub.turnsElapsed))
         self.turnsElapsedLabel = Label(self.optionsFrame,
                                        textvar=self.turnsElapsed)
-        self.turnsElapsedLabel.grid(row=4, column=0, sticky=W)
+        self.turnsElapsedLabel.grid(row=5, column=0, sticky=W)
 
         self.gameTypes = ["Human-Human", "Human-AI", "AI-AI", "AI-Human"]
         # TODO: Change gametype to change based on input.
         self.player = {1: "Random", -1: "Random"}
-
-        # self.root.bind("<<AI Move>>", self.ai_move())
+        # self.disable_buttons()
 
     def get_frame(self):
         return self.ub_frame
 
-    def bind_buttons(self):
+    def disable_buttons(self):
+        for by in range(3):
+            for bx in range(3):
+                for iy in range(3):
+                    for ix in range(3):
+                        # equalButton.bind("<Button-1>", get_sum)
+                        self.mb_frames[by][bx].button[iy][ix].config(
+                            state="disabled")
+
+    def setup_buttons(self):
         for by in range(3):
             for bx in range(3):
                 for iy in range(3):
@@ -202,12 +210,18 @@ class UltimateBoardFrame():
         self.root.update()
         self.next_move()
 
+    def start_game(self):
+        if self.player[1] == "Human" or self.player[-1] == "Human":
+            self.setup_buttons()
+        self.next_move()
+        self.startButton.config(relief=RAISED)
+        self.root.update()
+
     def next_move(self):
         if self.ub.finished != 0:
             return
         if self.player[self.ub.currentPlayer] == "Human":
             return
-        # self.set_ai_next_move()
         self.ai_move()
 
     def ai_move(self):
@@ -229,10 +243,6 @@ class UltimateBoardFrame():
         else:
             self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX]\
                 .set_invalid()
-
-    def set_ai_next_move(self):
-        self.root.bind("<<AI Move>>", self.ai_move())
-        self.root.event_generate("<<AI Move>>")
 
     def update_board(self, bx, by, ix, iy):
         # self.set_valid_boards()
@@ -260,11 +270,26 @@ class UltimateBoardFrame():
                                int_to_letter(self.ub.currentPlayer))
         # self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX].set_valid()
 
-    def mainloop(self):
-        while True:
-            self.root.bind("<<AI Move>>", self.ai_move())
-            self.root.update_idletasks()
-            self.root.update()
+    def set_new_board(self):
+        # Check which boxes are valid
+        if self.ub.finished == 0:
+            if self.ub.lastPlayedX == -1:
+                for y in range(3):
+                    for x in range(3):
+                        self.mb_frames[y][x] = \
+                            MiniBoardFrame(self.ub_frame, self.ub.boards[y][x],
+                                           x, y)
+            else:
+                self.mb_frames[self.ub.lastPlayedY][self.ub.lastPlayedX]. \
+                    set_valid()
+
+        self.turnsElapsed.set("Turns Elapsed: " + str(self.ub.turnsElapsed))
+        self.currentPlayer.set("Current Player: " +
+                               int_to_letter(self.ub.currentPlayer))
+
+    def reset(self):
+        self.ub = UltimateBoard()
+        self.set_new_board()
 
 
 if __name__ == "__main__":
@@ -301,13 +326,11 @@ if __name__ == "__main__":
     ub = UltimateBoardFrame(root, u1)
 
     # ub.mainloop()
-    ub.set_ai_next_move()
     root.mainloop()
     # ub.next_move()
 
     # print(u1)
     # print(u1.finished)
-    # BUG WITH THE ULTIMATE BOARD PRINT
     # mb = MiniBoardFrame(root, u1.boards[2][0], 0, 0)
     # m2 = MiniBoard()
     # m2.do_move(2, 1, 1)
