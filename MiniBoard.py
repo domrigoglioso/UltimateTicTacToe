@@ -15,6 +15,8 @@ class MiniBoard:
         self.turnsElapsed = 0
         # lastPlayed is the coordinates of the last box played.
         self.lastPlayed = (-1, -1)
+        # The value of this board according to the heuristic found below
+        self.score = 0
 
     def __str__(self):
         line = "\n|---|---|---|\n"
@@ -74,6 +76,7 @@ class MiniBoard:
         self.turnsElapsed += 1
         self.lastPlayed = (x, y)
         self.finished = self.check_win()
+        self.score = self.eval_mini()
 
     # Attempts to make a move in the box (x, y)
     # If the move abides by tic-tac-toe rules, then the game is updated
@@ -86,6 +89,7 @@ class MiniBoard:
             self.turnsElapsed += 1
             self.lastPlayed = (x, y)
             self.finished = self.check_win()
+            self.score = self.eval_mini()
 
     # Returns true if a move in box (x, y) is valid given the game's current
     # state
@@ -98,6 +102,7 @@ class MiniBoard:
         self.currentPlayer *= -1
         self.turnsElapsed += 1
         self.lastPlayed = (x, y)
+        self.score = self.eval_mini()
 
     # Returns a list of tuples of valid moves
     def get_valid_moves(self):
@@ -147,6 +152,53 @@ class MiniBoard:
                 if self.state[y][x] == 0:
                     return False
         return True
+
+    # Returns the value of this board according the evaluation function:
+    # 3X_2 + X_1 - 3O_2 - O_1, or +-100 for a X/O win, 0 for tie.
+    def eval_mini(self):
+        if self.finished == -1:
+            return -100
+        elif self.finished == 1:
+            return 100
+        elif self.finished == 10:
+            return 0
+        return 3*self.count_occurrences(2, 1) + self.count_occurrences(1, 1) - \
+            3*self.count_occurrences(2, -1) - self.count_occurrences(1, -1)
+
+    # Counts how many occurrences of [num_occ] of the same player are in the
+    # same line while not being interrupted by the other player
+    # [player] should be 1 for X, or -1 for O. [num_occ] should be 0, 1, 2, or 3
+    def count_occurrences(self, num_occ, player):
+        occs = 0
+        opp = player * -1
+        # We want the value of a line to be negative for O, and positive for X
+        num_occ = num_occ * player
+        # Check diagonals for [occ] in a row
+        # Make sure the opponent isn't in that row
+        if self.state[0][0] + self.state[1][1] + self.state[2][2] == num_occ \
+            and not (self.state[0][0] == opp or self.state[1][1] == opp or
+                     self.state[2][2] == opp):
+            occs += 1
+
+        if self.state[2][0] + self.state[1][1] + self.state[0][2] == num_occ \
+            and not (self.state[2][0] == opp or self.state[1][1] == opp or
+                     self.state[0][2] == opp):
+            occs += 1
+        # Check rows
+        for y in range(3):
+            if self.state[y][0] + self.state[y][1] + self.state[y][2] == \
+                    num_occ and \
+                    self.state[y][0] != opp and self.state[y][1] != opp and \
+                    self.state[y][2] != opp:
+                occs += 1
+        # Check cols
+        for x in range(3):
+            if self.state[0][x] + self.state[1][x] + self.state[2][x] ==\
+                    num_occ and \
+                    self.state[0][x] != opp and self.state[1][x] != opp and \
+                    self.state[2][x] != opp:
+                occs += 1
+        return occs
 
     # Return -1, or 1 if O or X has won the tic-tac-toe game, respectively.
     # Return 0 if the game has not been won.

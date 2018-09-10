@@ -2,6 +2,7 @@ from MiniBoard import MiniBoard
 import random
 import copy
 from collections import namedtuple
+import sys
 # TwoPoint is for holding the location of a coordinate (innerX, innerY)
 # within the MiniBoard at location (boardX, boardY)
 TwoPoint = namedtuple('TwoPoint', 'boardX boardY innerX innerY')
@@ -199,10 +200,20 @@ class UltimateBoard:
         if self.finished != 0:
             return
         moves = self.get_valid_moves()
-        num_moves = len(moves)
         r = random.randint(0, len(moves)-1)
         move = moves[r]
         self.do_move4(move.boardX, move.boardY, move.innerX, move.innerY)
+
+    # Gets the value of the Ultimate Tic-Tac-Toe board based on the following
+    # function, where S(x, y) is the score of the board at (x,y)
+    # 5*S(middle board) + 3*S(corner board) + S(other boards)
+    def get_board_value(self):
+        return self.boards[1][0].score + self.boards[0][1].score + \
+               self.boards[2][1].score + self.boards[1][2].score + \
+               3*(self.boards[0][0].score + self.boards[1][1].score +
+                  self.boards[2][2].score + self.boards[2][0].score +
+                  self.boards[0][2].score) + \
+               5*self.boards[1][1].score
 
     def __str__(self):
         # line = "\n|---|---|---|\t|---|---|---|\t|---|---|---|\n"
@@ -219,6 +230,87 @@ class UltimateBoard:
              + str(self.lastPlayedX) + ", " + str(self.lastPlayedY) \
              + ") \tTurns Elapsed: " + str(self.turnsElapsed)
         return st
+
+
+class GameTree:
+    # def __init__(self, ub: UltimateBoard):
+    #     self.state = ub
+        # self.children = []
+        # self.get_child_states()
+    @staticmethod
+    def get_child_states(state: UltimateBoard):
+        actions = state.get_valid_moves()
+        children = []
+        # print(actions)
+        for action in actions:
+            child = copy.deepcopy(state)
+            # print(child)
+            child.do_move4(action.boardX, action.boardY, action.innerX,
+                           action.innerY)
+            children.append(child)
+        random.shuffle(children)
+        return children
+
+    @staticmethod
+    def minimax(state: UltimateBoard, depth, max_player):
+        # print(state)
+        if depth == 0:
+            return state.get_board_value()
+            # return state.get_board_value(), state
+        children = GameTree.get_child_states(state)
+        # print(len(children))
+        if max_player == 1:
+            val = -123456789
+            best_c = state
+            for child in children:
+                val = max(GameTree.minimax(child, depth-1, -1), val)
+                # child_val, c = GameTree.minimax(child, depth-1, -1)
+                # if child_val > value:
+                #     value = child_val
+                #     best_c = c
+            return val
+            # return value, best_c
+        else:
+            val = 123456789
+            best_c = state
+            for child in children:
+                val = max(GameTree.minimax(child, depth - 1, -1), val)
+                # print(child)
+                # print(depth-1)
+                # child_val, c = GameTree.minimax(child, depth-1, 1)
+                # if child_val < value:
+                #     value = child_val
+                #     best_c = c
+                # return value, best_c
+            return val
+
+    @staticmethod
+    def minimax_tree_move(state: UltimateBoard, depth, max_player):
+        if state.finished != 0:
+            return
+        children = GameTree.get_child_states(state)
+        b = children[0]
+        opt_val = 123456789 * max_player
+        for child in children:
+            child_val = GameTree.minimax(child, depth-1, max_player)
+            if max_player == 1 and child_val > opt_val:
+                opt_val = child_val
+                b = child
+            if max_player == -1 and child_val < opt_val:
+                opt_val = child_val
+                b = child
+        state.do_move4(b.lastMove[0], b.lastMove[1], b.lastMove[2],
+                       b.lastMove[3])
+        return b.lastMove
+
+
+
+
+
+
+
+
+
 
 
 # print(UltimateBoard.convert_coords_four(2, 2, 2, 2))

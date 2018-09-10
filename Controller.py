@@ -1,4 +1,5 @@
 from UltimateTicTacToeGUI import UltimateBoardFrame
+from UltimateBoard import GameTree
 
 
 def run(gui: UltimateBoardFrame):
@@ -18,3 +19,11 @@ def random_move(gui):
     lastMove = gui.ub.lastMove
     gui.update_board(lastMove[0], lastMove[1], lastMove[2], lastMove[3])
     # gui.root.mainloop()
+
+
+def minimax_move(gui):
+    if gui.ub.finished:
+        return
+    gui.set_valid_boards()
+    next_move = GameTree.minimax_tree_move(gui.ub, 4, gui.ub.currentPlayer)
+    gui.update_board(next_move[0], next_move[1], next_move[2], next_move[3])

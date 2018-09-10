@@ -178,7 +178,7 @@ class UltimateBoardFrame():
 
         self.gameTypes = ["Human-Human", "Human-AI", "AI-AI", "AI-Human"]
         # TODO: Change gametype to change based on input.
-        self.player = {1: "Random", -1: "Random"}
+        self.player = {1: "Random", -1: "Minimax"}
         # self.disable_buttons()
 
     def get_frame(self):
@@ -226,8 +226,9 @@ class UltimateBoardFrame():
 
     def ai_move(self):
         if self.player[self.ub.currentPlayer] == "Random":
-            # print("hello")
             Controller.random_move(self)
+        if self.player[self.ub.currentPlayer] == "Minimax":
+            Controller.minimax_move(self)
 
         if self.player[1] != "Human" and self.player[-1] != "Human":
             self.root.after(50, self.root.update())
@@ -315,6 +316,12 @@ if __name__ == "__main__":
     #         u1.do_move2(rx, ry)
     # for i in range(40):
     #     u1.random_move()
+    # print(u1.boards[0][0].count_occurrences(2, 1))
+    # print(u1.boards[0][0].count_occurrences(2, -1))
+    # print(u1.boards[0][0].count_occurrences(1, 1))
+    # print(u1.boards[0][0].count_occurrences(1, -1))
+    # print(u1.boards[0][0].eval_mini())
+    # print(u1.get_board_value())
     # u1.do_move4(1, 1, 1, 1)
     # u1.do_move4(1, 1, 2, 0)
     # u1.do_move4(2, 0, 1, 1)
